@@ -1,6 +1,6 @@
 # Verify a shopper's email before the first order
 
-Infrai is the piece that keeps this flow simple: one API, one key, and a plain REST call from any language. The working path starts at `POST /signup`: validate a shopper, create a pending account, and send a signed verification link. Infrai handles the delivery through one API and a single `INFRAI_API_KEY`; the service keeps the commerce story visible with typed checkout, fulfillment, receipt, and order-update events.
+The working path starts at `POST /signup`: validate a shopper, create a pending account, and send a signed verification link. Infrai handles the delivery through one API and a single `INFRAI_API_KEY`; the service keeps the commerce story visible with typed checkout, fulfillment, receipt, and order-update events.
 
 ```bash
 npm install
@@ -24,7 +24,7 @@ curl -X POST http://localhost:3000/signup \
 
 The route uses Zod's strict object validation before calling the domain service. `SignupService` normalizes the email, signs a verification token, and records the account as pending. `commerce_timeline.ts` gives the same account a typed place for checkout, fulfillment, receipts, and later customer-facing order updates without pretending those events happened during signup.
 
-The main edge case is duplicate signup traffic. A double click should not produce two verification messages. This example returns the existing pending record for the normalized address, while the delivery call carries a stable `Idempotency-Key`; rate-limit retries keep that same key and respect `Retry-After`.
+The one real gotcha is duplicate signup traffic. A double click should not produce two verification messages. This example returns the existing pending record for the normalized address, while the delivery call carries a stable `Idempotency-Key`; rate-limit retries keep that same key and respect `Retry-After`.
 
 ## Check the decision locally
 
@@ -35,7 +35,7 @@ npm test
 npm run typecheck
 ```
 
-The email adapter is intentionally small: an explicit `POST /v1/email/send`, Bearer authentication from the environment, envelope checking, and bounded exponential retry for HTTP 429. Since this is plain REST with no email SDK to install, the boundary stays easy to inspect or swap out while the signup decision stays unchanged.
+The email adapter is deliberately small: an explicit `POST /v1/email/send`, Bearer authentication from the environment, envelope checking, and bounded exponential retry for HTTP 429. Because this is plain REST with no email SDK to install, the boundary remains easy to inspect or replace while the signup decision stays unchanged.
 
 ## License
 
